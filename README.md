@@ -9,10 +9,11 @@ pip install tencentyun_cos
 ### 下载源码
 从github下载源码装入到您的程序中，并加载tencentyun_cos包
 
-## 修改配置
+### 修改配置
 修改tencentyun_cos/conf.py内的appid等信息为您的配置
 
-# 文件上传
+### 文件上传
+```python
 import tencentyun_cos
 
 cos = tencentyun_cos.Cos()	#使用conf.py中配置的信息
