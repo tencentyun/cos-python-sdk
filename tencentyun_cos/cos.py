@@ -7,6 +7,7 @@ import sys
 import string
 import hashlib
 import requests
+import urllib
 from tencentyun_cos import conf
 from .auth import Auth
 
@@ -62,7 +63,7 @@ class Cos(object):
 			return {'httpcode':0, 'code':self.COS_FILE_NOT_EXISTS, 'message':'file not exists', 'data':{}}
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
-		dstpath = string.strip(dstpath, '/')
+		dstpath = urllib.quote(string.strip(dstpath, '/'))
 		url = self.generate_res_url(bucket, dstpath)
 		auth = Auth(self._secret_id, self._secret_key)
 		sign = auth.sign_more(bucket, expired)
@@ -84,13 +85,12 @@ class Cos(object):
 	创建目录
 	bucket      
 	path        创建的目录路径
-	toOverWrite 当path冲突时,是否覆盖原path节点。0:不覆盖. 其他值: 覆盖. 默认不覆盖
 	bizattr     目录属性
 	"""
-	def createFolder(self, bucket, path, toOverWrite=0, bizattr=''):
+	def createFolder(self, bucket, path, bizattr=''):
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
-		path = string.strip(path, '/') + '/'
+		path = urllib.quote(string.strip(path, '/') + '/')
 		url = self.generate_res_url(bucket, path)
 		auth = Auth(self._secret_id, self._secret_key)
 		sign = auth.sign_more(bucket, expired)
@@ -101,7 +101,7 @@ class Cos(object):
 			'User-Agent':conf.get_ua(),
 		}
 
-		data = {'op':'create','to_over_write':toOverWrite,'biz_attr':bizattr}
+		data = {'op':'create','biz_attr':bizattr}
 
 		return self.sendRequest('POST', url, headers=headers, data=json.dumps(data))
 		
@@ -120,7 +120,7 @@ class Cos(object):
 	def listFiles(self, bucket, path, num=20, pattern='eListBoth', order=0, offset='') :
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
-		path = string.lstrip(path, '/')
+		path = urllib.quote(string.lstrip(path, '/'))
 		url = self.generate_res_url(bucket, path)
 		auth = Auth(self._secret_id, self._secret_key)
 		sign = auth.sign_more(bucket, expired)
@@ -143,7 +143,7 @@ class Cos(object):
 	def update(self, bucket, path, bizattr=''):
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
-		path = string.lstrip(path, '/')
+		path = urllib.quote(string.lstrip(path, '/'))
 		url = self.generate_res_url(bucket, path)
 		auth = Auth(self._secret_id, self._secret_key)
 		sign = auth.sign_once(bucket, '/'+str(conf.get_app_info()['appid'])+'/'+bucket+'/'+path)
@@ -165,9 +165,11 @@ class Cos(object):
 	path        目录/文件路径，目录必须以'/'结尾，文件不能以'/'结尾
 	"""
 	def delete(self, bucket, path):
+		if path == '':
+			return {'httpcode':0, 'code':self.COS_PARAMS_ERROR, 'message':'path cannot be empty', 'data':{}}
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
-		path = string.lstrip(path, '/')
+		path = urllib.quote(string.lstrip(path, '/'))
 		url = self.generate_res_url(bucket, path)
 		auth = Auth(self._secret_id, self._secret_key)
 		sign = auth.sign_once(bucket, '/'+str(conf.get_app_info()['appid'])+'/'+bucket+'/'+path)
@@ -192,7 +194,7 @@ class Cos(object):
 	def stat(self, bucket, path):
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
-		path = string.lstrip(path, '/')
+		path = urllib.quote(string.lstrip(path, '/'))
 		url = self.generate_res_url(bucket, path)
 		auth = Auth(self._secret_id, self._secret_key)
 		sign = auth.sign_more(bucket, expired)
@@ -214,7 +216,7 @@ class Cos(object):
 	def upload_slice(self, filepath, bucket, dstpath, bizattr='', slice_size=0, session=''):
 		filepath = os.path.abspath(filepath);
 		bucket = string.strip(bucket, '/')
-		dstpath = string.strip(dstpath, '/')
+		dstpath = urllib.quote(string.strip(dstpath, '/'))
 		rsp = self.upload_prepare(filepath,bucket,dstpath,bizattr,slice_size,session)
 		if rsp['httpcode'] != 200 or rsp['code'] != 0:  #上传错误
 			return rsp
@@ -233,12 +235,18 @@ class Cos(object):
 		fp = open(filepath, 'rb')
 		while size > offset:
 			data = fp.read(slice_size)
-			ret = self.upload_data(bucket,dstpath,data,session,offset)
-			if ret['httpcode'] != 200 or ret['code'] != 0:
-				return  ret
-			if ret.has_key('data'):
-				if ret['data'].has_key('url'):
+			retry = 0
+			while(True):
+				ret = self.upload_data(bucket,dstpath,data,session,offset)
+				if ret['httpcode'] != 200 or ret['code'] != 0:
+					if retry < 3:
+						retry += 1
+						continue
 					return  ret
+				if ret.has_key('data'):
+					if ret['data'].has_key('url'):
+						return  ret
+				break;
 			offset += slice_size
 		return  ret
 
