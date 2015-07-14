@@ -82,6 +82,33 @@ class Cos(object):
 		return self.sendRequest('POST', url, headers=headers, files=files)
 
 	"""
+	直接上传文件内容
+	适用于较小文件，大文件请采用分片上传
+	buffer:           文件内容
+	bucket:           上传的bcuket名称
+	dstpath:          上传的文件存储路径
+	bizattr:          文件的属性
+	"""
+	def upload_buffer(self, buffer, bucket, dstpath, bizattr=''):
+		expired = int(time.time()) + self.EXPIRED_SECONDS
+		bucket = string.strip(bucket, '/')
+		dstpath = urllib.quote(string.strip(dstpath, '/'))
+		url = self.generate_res_url(bucket, dstpath)
+		auth = Auth(self._secret_id, self._secret_key)
+		sign = auth.sign_more(bucket, expired)
+		sha1 = hashlib.sha1();
+		sha1.update(buffer)
+
+		headers = {
+			'Authorization':sign,
+			'User-Agent':conf.get_ua(),
+		}
+
+		files = {'op':'upload','filecontent':buffer,'sha':sha1.hexdigest(),'biz_attr':bizattr}
+
+		return self.sendRequest('POST', url, headers=headers, files=files)
+
+	"""
 	创建目录
 	bucket      
 	path        创建的目录路径
@@ -233,6 +260,7 @@ class Cos(object):
 			session = data['session']
 		size = os.path.getsize(filepath)
 		fp = open(filepath, 'rb')
+		fp.seek(offset)
 		while size > offset:
 			data = fp.read(slice_size)
 			retry = 0
@@ -246,7 +274,7 @@ class Cos(object):
 				if ret.has_key('data'):
 					if ret['data'].has_key('url'):
 						return  ret
-				break;
+				break
 			offset += slice_size
 		return  ret
 
