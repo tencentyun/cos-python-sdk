@@ -26,7 +26,7 @@ def set_app_info(appid=None,secret_id=None,secret_key=None):
         cos_config['secret_key'] = secret_key
 
 def get_ua():
-    version = pkg_resources.require("tencentyun_cos")[0].version
-    return 'QcloudPYTHON/'+version+' ('+platform.platform()+')';
+    version = pkg_resources.require("qcloud_cos")[0].version
+    return 'Qcloud-Cos-PYTHON/'+version+' ('+platform.platform()+')';
 
 

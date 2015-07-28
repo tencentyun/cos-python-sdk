@@ -4,8 +4,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = 'tencentyun_cos',
-    version = '1.0.2',
+    name = 'qcloud_cos',
+    version = '1.0.3',
     keywords = ('tencentyun', 'qcloud', 'cos'),
     description = 'python sdk for app.qcloud.com',
     license = 'MIT License',

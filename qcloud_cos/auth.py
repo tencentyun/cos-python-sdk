@@ -6,7 +6,7 @@ import hmac, hashlib
 import binascii
 import base64
 from urlparse import urlparse
-from tencentyun_cos import conf
+from qcloud_cos import conf
 
 class Auth(object):
 
