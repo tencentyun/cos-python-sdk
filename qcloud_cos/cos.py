@@ -194,7 +194,7 @@ class Cos(object):
 			'User-Agent':conf.get_ua(),
 		}
 
-		data = {'op':'list','num':num,'pattern':pattern,'order':order,'context':urllib.quote(context)}
+		data = {'op':'list','num':num,'pattern':pattern,'order':order,'context':context}
 
 		return self.sendRequest('GET', url, headers=headers, params=data, timeout=(self.connect_timeout, self.read_timeout))
         
