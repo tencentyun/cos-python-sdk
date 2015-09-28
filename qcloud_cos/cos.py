@@ -29,6 +29,16 @@ class Cos(object):
 		app_info = conf.get_app_info()
 		return app_info['end_point'] + str(app_info['appid']) + '/' + bucket + '/' + dstpath
 
+	def sha1file(self, filename, block=4*1024*1024):
+		sha1 = hashlib.sha1()
+		with open(filename, 'rb') as f:
+			while True:
+				data = f.read(block)
+				if not data:
+					break
+				sha1.update(data)
+		return sha1.hexdigest()
+
 	def sendRequest(self, method, url, **args):
 		r = {}
 		try:
@@ -69,18 +79,15 @@ class Cos(object):
 		dstpath = urllib.quote(string.strip(dstpath, '/'), '~/')
 		url = self.generate_res_url(bucket, dstpath)
 		auth = Auth(self._secret_id, self._secret_key)
+		sha1 = self.sha1file(srcpath);
 		sign = auth.sign_more(bucket, expired)
-		sha1 = hashlib.sha1();
-		fp = open(srcpath, 'rb')
-		sha1.update(fp.read())
-		fp.close()
 
 		headers = {
 			'Authorization':sign,
 			'User-Agent':conf.get_ua(),
 		}
 
-		files = {'op':'upload','filecontent':open(srcpath, 'rb'),'sha':sha1.hexdigest(),'biz_attr':bizattr}
+		files = {'op':'upload','filecontent':open(srcpath, 'rb'),'sha':sha1,'biz_attr':bizattr}
 
 		return self.sendRequest('POST', url, headers=headers, files=files, timeout=(self.connect_timeout, self.read_timeout))
 
@@ -98,9 +105,9 @@ class Cos(object):
 		dstpath = urllib.quote(string.strip(dstpath, '/'), '~/')
 		url = self.generate_res_url(bucket, dstpath)
 		auth = Auth(self._secret_id, self._secret_key)
-		sign = auth.sign_more(bucket, expired)
 		sha1 = hashlib.sha1();
 		sha1.update(buffer)
+		sign = auth.sign_more(bucket, expired)
 
 		headers = {
 			'Authorization':sign,
@@ -143,16 +150,16 @@ class Cos(object):
 		/[DirName]/		
 	num         拉取的总数
 	pattern     eListBoth, ListDirOnly, eListFileOnly 默认eListBoth
-	order       默认正序(=0), 填1为反序
-	offset      透传字段,用于翻页,前端不需理解,需要往前/往后翻页则透传回来
+	order       默认正序(=0), 填1为反序，需要翻页时，正序时0代表下一页，1代表上一页。反续时1代表下一页，0代表上一页。
+	context      透传字段,用于翻页,前端不需理解,需要往前/往后翻页则透传回来
 	"""
-	def list(self, bucket, path, num=20, pattern='eListBoth', order=0, offset='') :
+	def list(self, bucket, path, num=20, pattern='eListBoth', order=0, context='') :
 		bucket = string.strip(bucket, '/')
 		path = urllib.quote(string.strip(path, '/'), '~/')
 		if path != '':
 			path += '/'
 
-		return self.__list(bucket, path, num, pattern, order, offset)
+		return self.__list(bucket, path, num, pattern, order, context)
 
 	"""
 	前缀搜索
@@ -163,10 +170,10 @@ class Cos(object):
 	prefix 	    列出含prefix此前缀的所有文件
 	num         拉取的总数
 	pattern     eListBoth, ListDirOnly, eListFileOnly 默认eListBoth
-	order       默认正序(=0), 填1为反序
-	offset      透传字段,用于翻页,前端不需理解,需要往前/往后翻页则透传回来
+	order       默认正序(=0), 填1为反序，需要翻页时，正序时0代表下一页，1代表上一页。反续时1代表下一页，0代表上一页。
+	context      透传字段,用于翻页,前端不需理解,需要往前/往后翻页则透传回来
 	"""
-	def prefixSearch(self, bucket, path, prefix='', num=20, pattern='eListBoth', order=0, offset='') :
+	def prefixSearch(self, bucket, path, prefix='', num=20, pattern='eListBoth', order=0, context='') :
 		bucket = string.strip(bucket, '/')
 		path = urllib.quote(string.strip(path, '/'), '~/')
 		if path == '':
@@ -174,9 +181,9 @@ class Cos(object):
 		else :
 			path += '/' + prefix
 
-		return self.__list(bucket, path, num, pattern, order, offset)
+		return self.__list(bucket, path, num, pattern, order, context)
 
-	def __list(self, bucket, path, num=20, pattern='eListBoth', order=0, offset='') :
+	def __list(self, bucket, path, num=20, pattern='eListBoth', order=0, context='') :
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		url = self.generate_res_url(bucket, path)
 		auth = Auth(self._secret_id, self._secret_key)
@@ -187,7 +194,7 @@ class Cos(object):
 			'User-Agent':conf.get_ua(),
 		}
 
-		data = {'op':'list','num':num,'pattern':pattern,'order':order,'offset':offset}
+		data = {'op':'list','num':num,'pattern':pattern,'order':order,'context':urllib.quote(context)}
 
 		return self.sendRequest('GET', url, headers=headers, params=data, timeout=(self.connect_timeout, self.read_timeout))
         
@@ -378,18 +385,16 @@ class Cos(object):
 		url = self.generate_res_url(bucket, dstpath)
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		auth = Auth(self._secret_id, self._secret_key)
-		sign = auth.sign_more(bucket, expired)
 		size = os.path.getsize(filepath)
-		sha1 = hashlib.sha1();
-		fp = open(filepath, 'rb')
-		sha1.update(fp.read())
+		sha1 = self.sha1file(filepath);
+		sign = auth.sign_more(bucket, expired)
 
 		headers = {
 			'Authorization':sign,
 			'User-Agent':conf.get_ua(),
 		}
 
-		files = {'op': ('upload_slice'),'sha':sha1.hexdigest(),'filesize': str(size)}
+		files = {'op': ('upload_slice'),'sha':sha1,'filesize': str(size)}
 		if bizattr != '':
 			files['biz_attr'] = bizattr
 		if slice_size > 0:
@@ -404,11 +409,11 @@ class Cos(object):
 		url = self.generate_res_url(bucket,dstpath)
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		auth = Auth(self._secret_id, self._secret_key)
-		sign = auth.sign_more(bucket, expired)
 
 		sha1 = hashlib.sha1();
 		sha1.update(data)
 
+		sign = auth.sign_more(bucket, expired)
 		headers = {
 			'Authorization':sign,
 			'User-Agent':conf.get_ua(),
