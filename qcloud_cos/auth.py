@@ -29,9 +29,9 @@ class Auth(object):
                     ver = parts[2]
                     appid = parts[3]
                     bucket = parts[4]
-		    fileid = ''
-		    for i in range(3, len(parts)) :
-			fileid += '/' + parts[i]
+                    fileid = ''
+                    for i in range(3, len(parts)) :
+                        fileid += '/' + parts[i]
                     return {'cate':cate, 'ver':ver, 'appid':appid, 'bucket':bucket, 'fileid':fileid}
                 else:
                     return {}
@@ -56,7 +56,7 @@ class Auth(object):
         return signature
 
     def sign_once(self, bucket, fileid):
-	return self.app_sign(bucket, fileid, 0)
+        return self.app_sign(bucket, fileid, 0)
 
     def sign_more(self, bucket, expired):
-	return self.app_sign(bucket, '', expired)
+        return self.app_sign(bucket, '', expired)
