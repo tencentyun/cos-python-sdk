@@ -15,7 +15,7 @@ cos_config = {
 }
 
 def get_app_info():
-	return cos_config
+    return cos_config
 
 def set_app_info(appid=None,secret_id=None,secret_key=None):
     if appid:
