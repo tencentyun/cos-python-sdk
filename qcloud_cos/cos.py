@@ -90,7 +90,7 @@ class Cos(object):
 
 		files = {'op':'upload','filecontent':open(srcpath, 'rb'),'sha':sha1,'biz_attr':bizattr}
 
-		return self.sendRequest('POST', url, headers=headers, files=files, timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('POST', url, headers=headers, files=files, timeout=self.read_timeout)
 
 	"""
 	直接上传文件内容
@@ -117,7 +117,7 @@ class Cos(object):
 
 		files = {'op':'upload','filecontent':buffer,'sha':sha1.hexdigest(),'biz_attr':bizattr}
 
-		return self.sendRequest('POST', url, headers=headers, files=files, timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('POST', url, headers=headers, files=files, timeout=self.read_timeout)
 
 	"""
 	创建目录
@@ -141,7 +141,7 @@ class Cos(object):
 
 		data = {'op':'create','biz_attr':bizattr}
 
-		return self.sendRequest('POST', url, headers=headers, data=json.dumps(data), timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('POST', url, headers=headers, data=json.dumps(data), timeout=self.read_timeout)
 		
 	"""
 	目录列表
@@ -197,7 +197,7 @@ class Cos(object):
 
 		data = {'op':'list','num':num,'pattern':pattern,'order':order,'context':context}
 
-		return self.sendRequest('GET', url, headers=headers, params=data, timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('GET', url, headers=headers, params=data, timeout=self.read_timeout)
         
 	"""
 	目录信息 update
@@ -241,7 +241,7 @@ class Cos(object):
 
 		data = {'op':'update','biz_attr':bizattr}
 
-		return self.sendRequest('POST', url, headers=headers, data=json.dumps(data), timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('POST', url, headers=headers, data=json.dumps(data), timeout=self.read_timeout)
 
 	"""
 	删除目录
@@ -289,7 +289,7 @@ class Cos(object):
 
 		data = {'op':'delete'}
 
-		return self.sendRequest('POST', url, headers=headers, data=json.dumps(data), timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('POST', url, headers=headers, data=json.dumps(data), timeout=self.read_timeout)
 
 	"""
 	目录信息 查询
@@ -333,7 +333,7 @@ class Cos(object):
 
 		data={'op':'stat'}
 
-		return self.sendRequest('GET', url, headers=headers, params=data, timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('GET', url, headers=headers, params=data, timeout=self.read_timeout)
 
 
 	"""
@@ -402,7 +402,7 @@ class Cos(object):
 			files['slice_size'] = str(slice_size)
 		if session != '':
 			files['session'] = session
-		return self.sendRequest('POST', url, headers=headers,files=files, timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('POST', url, headers=headers,files=files, timeout=self.read_timeout)
 			
 	#上传二进制流，用于分片上传
 	def upload_data(self,bucket,dstpath,data,session,offset):
@@ -421,4 +421,4 @@ class Cos(object):
 		}
 
 		files = {'op': ('upload_slice'),'filecontent': data,'sha':sha1.hexdigest(),'session':session,'offset':str(offset)}
-		return self.sendRequest('POST', url, headers=headers, files=files, timeout=(self.connect_timeout, self.read_timeout))
+		return self.sendRequest('POST', url, headers=headers, files=files, timeout=self.read_timeout)
