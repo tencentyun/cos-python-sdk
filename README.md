@@ -7,7 +7,7 @@ python sdk for [腾讯云COS服务]
 pip install qcloud_cos
 
 ### 下载源码
-从github下载源码装入到您的程序中，并加载qcloud_cos包。(依赖requests扩展包，ver >= 2.4.1)
+从github下载源码装入到您的程序中，并加载qcloud_cos包。(依赖requests扩展包，ver >= 1.0.0)
 
 ### 修改配置
 修改qcloud_cos/conf.py内的appid等信息为您的配置
