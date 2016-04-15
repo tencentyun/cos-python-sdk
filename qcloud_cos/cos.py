@@ -78,7 +78,7 @@ class Cos(object):
 			
 		size = os.path.getsize(srcpath)
 		if size > 8 * 1024 * 1024:
-			return self.upload_slice(srcpath, bucket, dstpath, 3*1024*1024)
+			return self.upload_slice(srcpath, bucket, dstpath, bizattr, 3*1024*1024)
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
 		dstpath = urllib.quote(string.strip(dstpath, '/'), '~/')
