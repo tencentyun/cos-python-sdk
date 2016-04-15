@@ -72,9 +72,13 @@ class Cos(object):
 	bizattr:          文件的属性
 	"""
 	def upload(self, srcpath, bucket, dstpath, bizattr=''):
-		srcpath = os.path.abspath(srcpath);
+		srcpath = os.path.abspath(srcpath)
 		if not os.path.exists(srcpath):
 			return {'httpcode':0, 'code':self.COS_FILE_NOT_EXISTS, 'message':'file not exists', 'data':{}}
+			
+		size = os.path.getsize(srcpath)
+		if size > 8 * 1024 * 1024:
+			return self.upload_slice(srcpath, bucket, dstpath, 3*1024*1024)
 		expired = int(time.time()) + self.EXPIRED_SECONDS
 		bucket = string.strip(bucket, '/')
 		dstpath = urllib.quote(string.strip(dstpath, '/'), '~/')
@@ -82,13 +86,15 @@ class Cos(object):
 		auth = Auth(self._secret_id, self._secret_key)
 		sha1 = self.sha1file(srcpath);
 		sign = auth.sign_more(bucket, expired)
+		with open(srcpath, 'rb') as f:
+			data = f.read()
 
 		headers = {
 			'Authorization':sign,
 			'User-Agent':conf.get_ua(),
 		}
 
-		files = {'op':'upload','filecontent':open(srcpath, 'rb'),'sha':sha1,'biz_attr':bizattr}
+		files = {'op':'upload','filecontent':data,'sha':sha1,'biz_attr':bizattr}
 
 		return self.sendRequest('POST', url, headers=headers, files=files, timeout=self.read_timeout)
 
