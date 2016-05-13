@@ -45,6 +45,10 @@ class Auth(object):
         if not self._secret_id or not self._secret_key or not app_info['appid']:
             return self.AUTH_SECRET_ID_KEY_ERROR
 
+        if isinstance(bucket, unicode) :
+            bucket = bucket.encode('utf-8')
+        if isinstance(fileid, unicode) :
+            fileid = fileid.encode('utf-8')
         now = int(time.time())
         rdm = random.randint(0, 999999999)
         plain_text = 'a=' + app_info['appid'] + '&k=' + self._secret_id + '&e=' + str(expired) + '&t=' + str(now) + '&r=' + str(rdm) + '&f=' + fileid + '&b=' + bucket 
