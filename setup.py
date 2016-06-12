@@ -1,19 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 from setuptools import setup, find_packages
 
 setup(
-    name = 'qcloud_cos',
-    version = '1.0.4',
-    keywords = ('tencentyun', 'qcloud', 'cos'),
-    description = 'python sdk for app.qcloud.com',
-    license = 'MIT License',
-    install_requires=['requests'],
+        name = 'qcloud_cos',
+        version = '3.3',
+        description = 'python sdk for tencent qcloud cos',
 
-    author = 'jayli',
-    author_email = 'jayli@tencent.com',
-    
-    packages = find_packages(),
-    platforms = 'any',
-)
+        author = 'chengwu',
+        author_email = 'chengwu@tencent.com',
+
+        packages = find_packages(),
+        )

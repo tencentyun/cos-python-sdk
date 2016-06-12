@@ -1,54 +1,104 @@
-# qcloud_cos-python
+# python sdk for qcloud cos
 python sdk for [腾讯云COS服务]
+version: 3.3
 
-## 安装
-
-### 使用pip
-pip install qcloud_cos
+## 安装指南
 
 ### 下载源码
-从github下载源码装入到您的程序中，并加载qcloud_cos包。(依赖requests扩展包，ver >= 1.0.0)
+从github下载源码https://github.com/tencentyun/cos-python-sdk/tree/3.3
 
-### 修改配置
-修改qcloud_cos/conf.py内的appid等信息为您的配置
+### 安装qcloud_cos
+python setup.py install
 
-### 举例
+### 使用python sdk，参照sample.py
 ```python
+    # 设置用户属性, 包括appid, secret_id和secret_key
+    # 这些属性可以在cos控制台获取(https://console.qcloud.com/cos)
+    appid = 10022105
+    secret_id = u'xxxxxxxxxxxxxxxxxx'
+    secret_key = u'xxxxxxxxxxxxxx'
+    cos_client = CosClient(appid, secret_id, secret_key)
 
-#下面接口中的 path 变量 可以为'/dir/test.mp4' 也可以为 'dir/test.mp4'，sdk会自动补齐
+    # 设置要操作的bucket
+    bucket = u'mytest'
 
-import qcloud_cos as qcloud
+    ############################################################################
+    # 文件操作                                                                 #
+    ############################################################################
+    # 1. 上传文件(默认不覆盖)
+    #    将本地的local_file_1.txt上传到bucket的根分区下,并命名为sample_file.txt
+    #    默认不覆盖, 如果cos上文件存在,则会返回错误
+    request = UploadFileRequest(bucket, u'/sample_file.txt', u'local_file_1.txt')
+    upload_file_ret = cos_client.upload_file(request)
+    print 'upload file ret:', repr(upload_file_ret)
 
-cos = qcloud.Cos()	#使用conf.py中配置的信息
-#cos = qcloud.Cos(appid,secret_id,secret_key)	#自己设置配置信息
-obj = cos.upload('test.mp4','bucket','dir/test.mp4')	
-#obj = cos.upload_slice('test.mp4','bucket','dir/test.mp4', '', 3*1024*1024)	#分片上传，适用于较大文件
-print obj
+    # 2. 上传文件(覆盖文件, 只支持8MB以下的小文件覆盖)
+    #    将本地的local_file_2.txt上传到bucket的根分区下,覆盖已上传的sample_file.txt
+    request = UploadFileRequest(bucket, u'/sample_file.txt', u'local_file_2.txt')
+    request.set_insert_only(0)  # 设置允许覆盖
+    upload_file_ret = cos_client.upload_file(request)
+    print 'overwrite file ret:', repr(upload_file_ret)
 
-if obj['code'] == 0 :
-    # 查询文件状态
-    print cos.statFile('bucket', 'dir/test.mp4')
-    
-    # 删除文件
-    print cos.deleteFile('bucket', 'dir/test.mp4')
+    # 3. 获取文件属性
+    request = StatFileRequest(bucket, u'/sample_file.txt')
+    stat_file_ret = cos_client.stat_file(request)
+    print 'stat file ret:', repr(stat_file_ret)
 
-#创建目录
-obj = cos.createFolder('bucket', '/firstDir/')
-if obj['code'] == 0 :
-    print cos.upload('test.mp4', 'bucket', '/firstDir/firstfile.mp4')
+    # 4. 更新文件属性
+    request = UpdateFileRequest(bucket, u'/sample_file.txt')
 
-#获取指定目录下文件列表
-print cos.list('bucket', '/firstDir/', 20, 'eListFileOnly')
+    request.set_biz_attr(u'这是个demo文件')           # 设置文件biz_attr属性
+    request.set_authority(u'eWRPrivate')              # 设置文件的权限
+    request.set_cache_control(u'cache_xxx')           # 设置Cache-Control
+    request.set_content_type(u'application/text')     # 设置Content-Type
+    request.set_content_disposition(u'ccccxxx.txt')   # 设置Content-Disposition
+    request.set_content_language(u'english')          # 设置Content-Language
+    request.set_x_cos_meta(u'x-cos-meta-xxx', u'xxx') # 设置自定义的x-cos-meta-属性
+    request.set_x_cos_meta(u'x-cos-meta-yyy', u'yyy') # 设置自定义的x-cos-meta-属性
 
-#获取bucket下文件列表
-print cos.list('bucket', '/', 20, 'eListFileOnly')
+    update_file_ret = cos_client.update_file(request)
+    print 'update file ret:', repr(update_file_ret)
 
-#获取指定目录下以'abc'开头的文件
-print cos.prefixSearch('bucket', '/firstDir/', 'abc', 20, 'eListFileOnly')
+    # 5. 更新后再次获取文件属性
+    request = StatFileRequest(bucket, u'/sample_file.txt')
+    stat_file_ret = cos_client.stat_file(request)
+    print 'stat file ret:', repr(stat_file_ret)
 
-#查询文件属性
-print cos.statFile('bucket', '/firstDir/firstfile.mp4')
+    # 6. 移动文件, 将sample_file.txt移动位sample_file_move.txt
+    request = MoveFileRequest(bucket, u'/sample_file.txt', u'/sample_file_move.txt')
+    stat_file_ret = cos_client.move_file(request)
+    print 'move file ret:', repr(stat_file_ret)
 
-#删除文件
-print cos.deleteFile('bucket', '/firstDir/firstfile.mp4')
+    # 7. 删除文件
+    request = DelFileRequest(bucket, u'/sample_file_move.txt')
+    del_ret = cos_client.del_file(request)
+    print 'del file ret:', repr(del_ret)
+
+    ############################################################################
+    # 目录操作                                                                 #
+    ############################################################################
+    # 1. 生成目录, 目录名为sample_folder
+    request = CreateFolderRequest(bucket, u'/sample_folder/')
+    create_folder_ret = cos_client.create_folder(request)
+    print 'create folder ret:', create_folder_ret
+
+    # 2. 更新目录的biz_attr属性
+    request = UpdateFolderRequest(bucket, u'/sample_folder/', u'这是一个测试目录')
+    update_folder_ret = cos_client.update_folder(request)
+    print 'update folder ret:', repr(update_folder_ret)
+
+    # 3. 获取目录属性
+    request = StatFolderRequest(bucket, u'/sample_folder/')
+    stat_folder_ret = cos_client.stat_folder(request)
+    print 'stat folder ret:', repr(stat_folder_ret)
+
+    # 4. list目录, 获取目录下的成员
+    request = ListFolderRequest(bucket, u'/sample_folder/')
+    list_folder_ret = cos_client.list_folder(request)
+    print 'list folder ret:', repr(list_folder_ret)
+
+    # 5. 删除目录
+    request = DelFolderRequest(bucket, u'/sample_folder/')
+    delete_folder_ret = cos_client.del_folder(request)
+    print 'delete folder ret:', repr(delete_folder_ret)
 ```
