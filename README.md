@@ -4,11 +4,9 @@ version: 3.3
 
 ## 安装指南
 
-### 下载源码
-从github下载源码https://github.com/tencentyun/cos-python-sdk/tree/3.3
+请参照 [python sdk wiki](https://www.qcloud.com/doc/product/227/3385)
 
-### 安装qcloud_cos
-python setup.py install
+执行 pip install qcloud_cos
 
 ### 使用python sdk，参照sample.py
 ```python
