@@ -59,9 +59,9 @@ class BaseOp(object):
         http_resp = {}
         try:
             if method == 'POST':
-                http_resp = self._http_session.post(url, **args)
+                http_resp = self._http_session.post(url, verify=False, **args)
             else:
-                http_resp = self._http_session.get(url, **args)
+                http_resp = self._http_session.get(url, verify=False, **args)
 
             status_code = http_resp.status_code
             if (status_code == 200 or status_code == 400):

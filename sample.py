@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from qcloud_cos  import CosClient
+from qcloud_cos import CosClient
 from qcloud_cos import UploadFileRequest
 from qcloud_cos import UploadSliceFileRequest
 from qcloud_cos import UpdateFileRequest
@@ -17,13 +17,13 @@ from qcloud_cos import ListFolderRequest
 def cos_demo():
     # 设置用户属性, 包括appid, secret_id和secret_key
     # 这些属性可以在cos控制台获取(https://console.qcloud.com/cos)
-    appid = 10022105
-    secret_id = u'AKIDGFf8r88nYtFdUilQVL1STwDNrrTngcom'
-    secret_key = u'yM3H3xSREuk96vmBrwh8UadruA5gWhrc'
+    appid = 100000                  # 替换为用户的appid
+    secret_id = u'xxxxxxxx'         # 替换为用户的secret_id
+    secret_key = u'xxxxxxx'         # 替换为用户的secret_key
     cos_client = CosClient(appid, secret_id, secret_key)
 
     # 设置要操作的bucket
-    bucket = u'chengwu'
+    bucket = u'mybucket'
 
     ############################################################################
     # 文件操作                                                                 #

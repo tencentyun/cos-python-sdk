@@ -40,3 +40,7 @@ class CosConfig(object):
     # 获取签名过期时间, 单位秒
     def get_sign_expired(self):
         return self._sign_expired
+
+    # 打开https
+    def enable_https(self):
+        self._end_point = 'https://web.file.myqcloud.com/files/v1'
