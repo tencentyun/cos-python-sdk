@@ -142,7 +142,7 @@ class FileOp(BaseOp):
     # 获取content的sha1
     def _sha1_content(self, content):
         sha1_obj = hashlib.sha1()
-        sha1_obj.update(content) 
+        sha1_obj.update(content)
         return sha1_obj.hexdigest()
 
     # 获取文件的sha1
@@ -186,7 +186,7 @@ class FileOp(BaseOp):
             http_body['custom_headers'] = request.get_custom_headers()
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, 
+        return self.send_request('POST', bucket, cos_path, headers=http_header,
                 data=json.dumps(http_body), timeout=timeout)
 
     # 删除文件
@@ -223,7 +223,7 @@ class FileOp(BaseOp):
         http_body['to_over_write'] = request.get_over_write()
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, 
+        return self.send_request('POST', bucket, cos_path, headers=http_header,
                 data=json.dumps(http_body), timeout=timeout)
 
     # 上传文件, 根据用户的文件大小,选择单文件上传和分片上传策略
@@ -243,10 +243,11 @@ class FileOp(BaseOp):
             bucket     = request.get_bucket_name()
             cos_path   = request.get_cos_path()
             local_path = request.get_local_path()
-            slice_size = 512 * 1024
+            slice_size = 1024 * 1024
             biz_attr   = request.get_biz_attr()
             upload_slice_request = UploadSliceFileRequest(bucket, cos_path,
                     local_path, slice_size, biz_attr)
+            upload_slice_request.set_insert_only(request.get_insert_only())
             return self.upload_slice_file(upload_slice_request)
 
     # 单文件上传
@@ -261,7 +262,7 @@ class FileOp(BaseOp):
         # 判断文件是否超过单文件最大上限, 如果超过则返回错误
         # 并提示用户使用别的接口
         if file_size > self.max_single_file:
-            return CosErr.get_err_msg(CosErr.NETWORK_ERROR, 
+            return CosErr.get_err_msg(CosErr.NETWORK_ERROR,
                     'file is to big, please use upload_file interface')
 
         auth     = cos_auth.Auth(self._cred)
@@ -285,7 +286,7 @@ class FileOp(BaseOp):
         http_body['insertOnly']  = str(request.get_insert_only())
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, 
+        return self.send_request('POST', bucket, cos_path, headers=http_header,
                 files=http_body, timeout=timeout)
 
     # 分片文件上传(串行)
@@ -319,7 +320,7 @@ class FileOp(BaseOp):
                 max_retry = 3
                 # 如果分片数据上传发生错误, 则进行重试,默认3次
                 while retry_count < max_retry:
-                    data_ret = self._upload_slice_data(bucket, cos_path, 
+                    data_ret = self._upload_slice_data(bucket, cos_path,
                             file_content, session, offset)
                     if data_ret[u'code'] == 0:
                         if data_ret[u'data'].has_key(u'access_url'):
@@ -362,7 +363,7 @@ class FileOp(BaseOp):
         http_body['insertOnly'] = str(request.get_insert_only())
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, 
+        return self.send_request('POST', bucket, cos_path, headers=http_header,
                 files=http_body, timeout=timeout)
 
     # 串行分片第二步, 上传数据分片
@@ -382,7 +383,7 @@ class FileOp(BaseOp):
         http_body['offset']      = str(offset)
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, 
+        return self.send_request('POST', bucket, cos_path, headers=http_header,
                 files=http_body, timeout=timeout)
 
 ################################################################################
@@ -414,7 +415,7 @@ class FolderOp(BaseOp):
         http_body['biz_attr'] = request.get_biz_attr()
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, 
+        return self.send_request('POST', bucket, cos_path, headers=http_header,
                 data=json.dumps(http_body), timeout=timeout)
 
     # 删除目录
@@ -450,7 +451,7 @@ class FolderOp(BaseOp):
         http_body['biz_attr'] = request.get_biz_attr()
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, 
+        return self.send_request('POST', bucket, cos_path, headers=http_header,
                 data=json.dumps(http_body), timeout=timeout)
 
     # list目录
@@ -479,5 +480,5 @@ class FolderOp(BaseOp):
         http_header['User-Agent']    = self._config.get_user_agent()
 
         timeout = self._config.get_timeout()
-        return self.send_request('GET', bucket, list_path, headers=http_header, 
+        return self.send_request('GET', bucket, list_path, headers=http_header,
                 params=http_body, timeout=timeout)

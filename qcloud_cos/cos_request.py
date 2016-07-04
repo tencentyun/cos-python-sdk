@@ -143,8 +143,8 @@ class UploadSliceFileRequest(UploadFileRequest):
     # cos_path:     cos的绝对路径(目的路径), 从bucket根/开始
     # local_path:   上传的本地文件路径(源路径)
     # biz_attr:     文件的属性
-    # slice_size:   分片大小(字节, 默认512KB)
-    def __init__(self, bucket_name, cos_path, local_path, slice_size=512*1024,
+    # slice_size:   分片大小(字节, 默认1MB)
+    def __init__(self, bucket_name, cos_path, local_path, slice_size=1024*1024,
             biz_attr=u''):
         super(UploadSliceFileRequest, self).__init__(bucket_name, cos_path, local_path,
                 biz_attr)
