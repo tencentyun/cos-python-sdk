@@ -2,8 +2,8 @@
 # coding=utf-8
 
 import sys
-if sys.version_info[0] != 2 or sys.version_info[1] < 7:
-    sys.exit('Sorry, only python 2.7 is supported')
+if sys.version_info[0] != 2 or sys.version_info[1] < 6:
+    sys.exit('Sorry, only python 2.6 or 2.7 is supported')
 
 from setuptools import setup, find_packages
 setup(

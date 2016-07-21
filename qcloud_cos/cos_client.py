@@ -17,8 +17,11 @@ from cos_request import CreateFolderRequest
 from cos_request import StatFolderRequest
 from cos_request import StatFileRequest
 from cos_request import ListFolderRequest
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+try:
+    from requests.packages.urllib3.exceptions import InsecureRequestWarning
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+except ImportError:
+    pass
 
 ################################################################################
 # Cos客户端类                                                                  #
