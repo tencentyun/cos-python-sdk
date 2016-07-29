@@ -209,6 +209,7 @@ class UpdateFileRequest(BaseRequest):
     # content_type:           文件的MIME信息,参见HTTP的Content-Type
     # content_disposition:    MIME协议的扩展,参见HTTP的Content-Disposition
     # content_language:       文件的语言, 参见HTTP的Content-Language
+    # content_encoding:       body的编码, 参见HTTP的Content-Encoding
     # _x_cos_meta_dict:       用户自定义的属性, key是以x-cos-meta-开头,value为属性值
     def __init__(self, bucket_name, cos_path):
         super(UpdateFileRequest, self).__init__(bucket_name, cos_path)
@@ -220,6 +221,7 @@ class UpdateFileRequest(BaseRequest):
         self._content_type        = u''
         self._content_disposition = u''
         self._content_language    = u''
+        self._content_encoding    = u''
         self._x_cos_meta_dict     = {}
 
     # 获取flag
@@ -271,6 +273,12 @@ class UpdateFileRequest(BaseRequest):
         self._flag |= 0x40
         self._custom_headers['Content-Language'] = content_language
 
+    # 设置Content-Encoding
+    def set_content_encoding(self, content_encoding):
+        self._content_encoding = content_encoding
+        self._flag |= 0x40
+        self._custom_headers['Content-Encoding'] = content_encoding
+
     # 设置自定义的x-cos-meta, key以x-cos-meta-开头
     # 例如自定义key为u'x-cos-meta-len', value为u'1024'
     def set_x_cos_meta(self, key, value):
@@ -321,6 +329,9 @@ class UpdateFileRequest(BaseRequest):
             return False
         if not self._param_check.check_param_unicode('content_language',
                 self._content_language):
+            return False
+        if not self._param_check.check_param_unicode('content_encoding',
+                self._content_encoding):
             return False
         return self._param_check.check_x_cos_meta_dict(self._x_cos_meta_dict)
 

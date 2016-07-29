@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 import os
+import re
 
 ################################################################################
 # BaseRequest基本类型的请求                                                    #
@@ -53,7 +54,19 @@ class ParamCheck(object):
             self._err_tips = 'for folder operation, cos_path must end with /'
             return False
         else:
-            return True
+            pass
+
+        illegal_letters = ['?', '*', ':', '|', '\\', '<', '>', '"']
+        for illegal_letter in illegal_letters:
+            if cos_path.find(illegal_letter) != -1:
+                self._err_tips = 'cos path contain illegal letter %s' % illegal_letter
+                return False
+
+        pattern = re.compile(r'/(\s*)/')
+        if pattern.search(cos_path):
+            self._err_tips = 'cos path contain illegal letter / /'
+            return False
+        return True
 
     # 检查不是cos的跟路基
     # 不等进行根路径操作的有 1 update 2 cretate 3 delete
