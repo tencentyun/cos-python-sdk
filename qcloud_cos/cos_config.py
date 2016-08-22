@@ -8,7 +8,7 @@ class CosConfig(object):
     def __init__(self):
         self._end_point    = 'http://web.file.myqcloud.com/files/v1'
         self._user_agent   = 'cos-python-sdk-v3.3'
-        self._timeout      = 3 
+        self._timeout      = 30
         self._sign_expired = 300
 
     # 设置COS的域名地址
